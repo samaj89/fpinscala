@@ -138,4 +138,18 @@ object List { // `List` companion object. Contains functions for creating and wo
     case (_, Nil) => Nil
     case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith(xs, ys)(f))
   }
+
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    def hasPrefix[A](l: List[A], prefix: List[A]): Boolean = (l, prefix) match {
+      case (_, Nil) => true
+      case (Cons(x, xs), Cons(y, ys)) if x == y => hasPrefix(xs, ys)
+      case _ => false
+    }
+
+    sup match {
+      case Nil => sub == Nil
+      case _ if hasPrefix(sup, sub) => true
+      case Cons(_, xs) => hasSubsequence(xs, sub)
+    }
+  }
 }
