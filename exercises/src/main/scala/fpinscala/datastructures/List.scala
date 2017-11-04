@@ -109,5 +109,33 @@ object List { // `List` companion object. Contains functions for creating and wo
   def concat[A](as: List[List[A]]): List[A] =
     foldRight(as, List[A]())(append2)
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = ???
+  def addOne(as: List[Int]): List[Int] =
+    foldRight(as, List[Int]())((x, acc) => Cons(x + 1, acc))
+
+  def doubleToString(as: List[Double]): List[String] =
+    foldRight(as, List[String]())((x, acc) => Cons(x.toString, acc))
+
+  def map[A,B](l: List[A])(f: A => B): List[B] =
+    foldRight(l, List[B]())((x, acc) => Cons(f(x), acc))
+
+  def filter[A](l: List[A])(f: A => Boolean): List[A] =
+    foldRight(l, List[A]())((x, acc) => if (f(x)) Cons(x, acc) else acc)
+
+  def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] =
+    foldRight(l, List[B]())((x, acc) => append2(f(x),acc))
+
+  def filter2[A](l: List[A])(f: A => Boolean): List[A] =
+    flatMap(l)(x => if (f(x)) List(x) else Nil)
+
+  def pairwiseAdd(l1: List[Int], l2: List[Int]): List[Int] = (l1, l2) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(x, xs), Cons(y, ys)) => Cons(x + y, pairwiseAdd(xs, ys))
+  }
+
+  def zipWith[A, B, C](l1: List[A], l2: List[B])(f: (A, B) => C): List[C] = (l1, l2) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith(xs, ys)(f))
+  }
 }
