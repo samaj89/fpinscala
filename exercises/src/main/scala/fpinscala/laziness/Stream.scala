@@ -40,7 +40,8 @@ trait Stream[+A] {
     case _ => empty
   }
 
-  def forAll(p: A => Boolean): Boolean = ???
+  def forAll(p: A => Boolean): Boolean =
+    foldRight(true)((a, b) => p(a) && b)
 
   def headOption: Option[A] = this match {
     case Empty => None
@@ -89,9 +90,4 @@ object Stream {
   def from(n: Int): Stream[Int] = ???
 
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = ???
-
-  def main(args: Array[String]): Unit = {
-    val s1 = Stream(2,4,6,8,10,11,12,13,14)
-    println(s1.takeWhile(_ % 2 != 0).toList2)
-  }
 }
