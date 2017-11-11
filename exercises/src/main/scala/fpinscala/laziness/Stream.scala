@@ -17,20 +17,57 @@ trait Stream[+A] {
     case Empty => None
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
   }
-  def take(n: Int): Stream[A] = ???
 
-  def drop(n: Int): Stream[A] = ???
+  def take(n: Int): Stream[A] = {
+    if (n <= 0) empty
+    else this match {
+      case Empty => empty
+      case Cons(h, t) => cons(h(), t().take(n - 1))
+    }
+  }
 
-  def takeWhile(p: A => Boolean): Stream[A] = ???
+  @annotation.tailrec
+  final def drop(n: Int): Stream[A] = {
+    if (n <= 0) this
+    else this match {
+      case Empty => empty
+      case Cons(_, t) => t().drop(n - 1)
+    }
+  }
+
+  def takeWhile(p: A => Boolean): Stream[A] = this match {
+    case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
+    case _ => empty
+  }
 
   def forAll(p: A => Boolean): Boolean = ???
 
-  def headOption: Option[A] = ???
+  def headOption: Option[A] = this match {
+    case Empty => None
+    case Cons(h, _) => Some(h())
+  }
+
+  // Not tail-recursive, stack overflow possible on large streams
+  def toList: List[A] = this match {
+    case Empty => Nil
+    case Cons(h, t) => h() :: t().toList
+  }
+
+  def toList2: List[A] = {
+    @annotation.tailrec
+    def helper(s: Stream[A], acc: List[A]): List[A] = s match {
+      case Empty => acc
+      case Cons(h, t) => helper(t(), acc :+ h())
+    }
+
+    helper(this, List())
+  }
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
 
   def startsWith[B](s: Stream[B]): Boolean = ???
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -52,4 +89,9 @@ object Stream {
   def from(n: Int): Stream[Int] = ???
 
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = ???
+
+  def main(args: Array[String]): Unit = {
+    val s1 = Stream(2,4,6,8,10,11,12,13,14)
+    println(s1.takeWhile(_ % 2 != 0).toList2)
+  }
 }
